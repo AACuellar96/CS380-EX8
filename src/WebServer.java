@@ -6,8 +6,8 @@ public class WebServer {
     public static void main(String[] args) throws Exception {
         try (ServerSocket serverSocket = new ServerSocket(8080)) {
             while (true) {
-                System.out.println("Client connecting to server");
                 Socket clientSocket = serverSocket.accept();
+                System.out.println("Client connected to server");
                 BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
                 String path;
                 String[] parse;
@@ -19,28 +19,26 @@ public class WebServer {
                 }
                 parse = path.split(" ");
                 path = "www" + parse[1];
-                PrintStream out = new PrintStream(clientSocket.getOutputStream(), true, "UTF-8");
+                OutputStream os = clientSocket.getOutputStream();
                 if (new File(path).exists()) {
-                    out.println(parse[2] + " 200 OK");
-                    out.println("Content-type: text/html");
+                    os.write((parse[2] + " 200 OK\r\n").getBytes("UTF-8"));
+                    os.write(("Content-type: text/html\r\n\r\n").getBytes("UTF-8"));
                     File file = new File(path);
                     BufferedReader brf = new BufferedReader(new FileReader(file));
-                    out.println("Content-length: " + file.length());
                     System.out.println("");
                     String temp;
                     while ((temp = brf.readLine()) != null) {
-                        out.println(temp);
+                        os.write((temp).getBytes("UTF-8"));
                     }
                 } else {
-                    out.println(parse[2] + " 404 Not Found");
-                    out.println("Content-type: text/html");
+                    os.write((parse[2] + " 404 Not Found\r\n").getBytes("UTF-8"));
+                    os.write(("Content-type: text/html\r\n\r\n").getBytes("UTF-8"));
                     File file = new File("www/FileNotFound.html");
                     BufferedReader brf = new BufferedReader(new FileReader(file));
-                    out.println("Content-length: " + file.length());
                     System.out.println("");
                     String temp;
                     while ((temp = brf.readLine()) != null) {
-                        out.println(temp);
+                        os.write((temp).getBytes("UTF-8"));
                     }
                     brf.close();
                 }
